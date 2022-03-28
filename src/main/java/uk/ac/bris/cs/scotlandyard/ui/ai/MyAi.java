@@ -7,10 +7,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nonnull;
 
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import io.atlassian.fugue.Pair;
 import uk.ac.bris.cs.scotlandyard.model.Ai;
-import uk.ac.bris.cs.scotlandyard.model.Board;
-import uk.ac.bris.cs.scotlandyard.model.Move;
+import uk.ac.bris.cs.scotlandyard.model.*;
 
 public class MyAi implements Ai {
 
@@ -22,5 +23,17 @@ public class MyAi implements Ai {
 		// returns a random move, replace with your own implementation
 		var moves = board.getAvailableMoves().asList();
 		return moves.get(new Random().nextInt(moves.size()));
+	}
+
+	public Player getMrX(ImmutableList<Player> players){
+		Player mrX = null;
+
+		for(Player player : players){
+			if(player.isMrX()){
+				mrX = player;
+			}
+		}
+
+		return mrX;
 	}
 }
