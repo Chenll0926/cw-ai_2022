@@ -27,45 +27,55 @@ public class MyAi implements Ai {
 	@Nonnull @Override public Move pickMove(
 			@Nonnull Board board,
 			Pair<Long, TimeUnit> timeoutPair) {
-
-		ImmutableSet<Player> allPlayers = getAllPlayers();
-
-		// returns a random move, replace with your own implementation
-		var moves = board.getAvailableMoves().asList();
-		return moves.get(new Random().nextInt(moves.size()));
+		var moves = availableMoves(board);
+		Move move = moves.get(new Random().nextInt(moves.size()));
+		return move;
 	}
 
+	private List<Move> availableMoves(Board board){
+		List<Move> allMoves = new ArrayList<>(board.getAvailableMoves());
+		List<Piece.Detective> detectivePieces = new ArrayList<>(getDetectives(board));
 
+		for(Move move : allMoves){
+			int destination = getDestination(move); //The destinations of mrx could move to
 
-
-	public Player getMrX (ImmutableSet<Player> players){
-
-		Player mrX = null;
-
-		for(Player player: players){
-			if (player.isMrX()) {
-				mrX = player;
+			for(Piece.Detective detective : detectivePieces){
+				if(board.getDetectiveLocation(detective).equals(destination)){ //If the destination have a detective there, mrx remove the choice of this path
+					allMoves.remove(move);
+				}
 			}
 		}
 
-		return mrX;
+		return allMoves;
+
 	}
 
-	public ImmutableSet<Player> getDetectives (ImmutableSet<Player> players){
+	//Use visitor to get the destination of two kinds of move
+	private Integer getDestination(Move move){
+		return move.accept(new Move.Visitor<Integer>() {
+			@Override
+			public Integer visit(Move.SingleMove move) {
+				return move.destination;
+			}
 
-		List<Player> detectives = new ArrayList<>();
+			@Override
+			public Integer visit(Move.DoubleMove move) {
+				return move.destination2;
+			}
+		});
+	}
 
-		for(Player player : players){
-			if (player.isDetective()){
-				detectives.add(player);
+	//Get detectives' pieces
+	public ImmutableList<Piece.Detective> getDetectives(Board board){
+		List<Piece.Detective> detectives = new ArrayList<>();
+		List<Piece> allPieces = new ArrayList<>(board.getPlayers());
+
+		for(Piece piece: allPieces){
+			if (piece.isDetective()){
+				detectives.add((Piece.Detective)piece);
 			}
 		}
 
-		return ImmutableSet.copyOf(detectives);
-	}
-
-	public ImmutableSet<Player> getAllPlayers (){
-
-		return ImmutableSet.of();
+		return ImmutableList.copyOf(detectives);
 	}
 }
